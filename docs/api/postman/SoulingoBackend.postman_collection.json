@@ -1,0 +1,448 @@
+{
+  "info": {
+    "name": "SoulingoBackend API",
+    "description": "Ruby on Rails API for language learning with TheFluent integration",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "User registration and login endpoints",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "register"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('jwt_token', response.token);",
+                  "    pm.test('User registered successfully', function () {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.token).to.not.be.empty;",
+                  "        pm.expect(response.user.name).to.eql('Test User');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/users/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "users", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('jwt_token', response.token);",
+                  "    pm.test('User logged in successfully', function () {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.token).to.not.be.empty;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lessons",
+      "description": "Lesson management endpoints",
+      "item": [
+        {
+          "name": "Get All Lessons",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/lessons",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "lessons"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has lessons array', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.true;",
+                  "    pm.expect(response.lessons).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Lesson by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/lessons/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "lessons", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Lesson",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Basic Greetings\",\n  \"content\": \"Hello, how are you today? I'm fine, thank you.\",\n  \"language\": \"English\",\n  \"difficulty\": \"beginner\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/lessons",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "lessons"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('lesson_id', response.lesson.id);",
+                  "    pm.test('Lesson created successfully', function () {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.lesson.title).to.eql('Basic Greetings');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User Lessons",
+      "description": "User lesson enrollment endpoints",
+      "item": [
+        {
+          "name": "Enroll in Lesson",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lesson_id\": {{lesson_id}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/user_lessons",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user_lessons"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('user_lesson_id', response.user_lesson.id);",
+                  "    pm.test('User enrolled in lesson', function () {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User Lesson Progress",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/user_lessons/{{user_lesson_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user_lessons", "{{user_lesson_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Recordings",
+      "description": "Audio recording endpoints",
+      "item": [
+        {
+          "name": "Create Recording",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lesson_id\": {{lesson_id}},\n  \"transcription\": \"Hello, how are you today?\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/recordings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "recordings"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('recording_id', response.recording.id);",
+                  "    pm.test('Recording created successfully', function () {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Recording",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/recordings/{{recording_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "recordings", "{{recording_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analysis",
+      "description": "Speech analysis endpoints",
+      "item": [
+        {
+          "name": "Analyze Recording",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recording_id\": {{recording_id}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/analysis",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analysis"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('analysis_id', response.analysis.id);",
+                  "    pm.test('Analysis created successfully', function () {",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.analysis.overall_score).to.be.a('number');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Analysis Results",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/analysis/{{analysis_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "analysis", "{{analysis_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Avatar",
+      "description": "HeyGen avatar speech generation",
+      "item": [
+        {
+          "name": "Generate Avatar Speech",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Hello, welcome to Soulingo! Let's start learning together.\",\n  \"avatar_id\": \"default_avatar\",\n  \"voice_id\": \"en-US-1\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/avatar/speak",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "avatar", "speak"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Voices",
+      "description": "Available TTS voices",
+      "item": [
+        {
+          "name": "Get Available Voices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/voices",
+              "host": ["{{base_url}}"],
+              "path": ["voices"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

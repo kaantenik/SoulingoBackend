@@ -1,0 +1,879 @@
+---
+openapi: 3.0.1
+info:
+  title: Soulingo Backend API V1
+  version: v1
+  description: API documentation for Soulingo language learning platform
+paths:
+  "/api/v1/analysis":
+    post:
+      summary: create analysis
+      tags:
+      - Analysis
+      description: Analyze a recording for speech quality using TheFluent API
+      security:
+      - Bearer: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        description: Bearer token for authentication
+        schema:
+          type: string
+      responses:
+        '201':
+          description: analysis completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Analysis completed successfully
+                  analysis:
+                    "$ref": "#/components/schemas/Analysis"
+                required:
+                - success
+                - message
+                - analysis
+        '404':
+          description: recording not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '422':
+          description: analysis failed
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recording_id:
+                  type: integer
+                  example: 1
+              required:
+              - recording_id
+  "/api/v1/analysis/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: id
+      required: true
+      schema:
+        type: string
+    get:
+      summary: show analysis
+      tags:
+      - Analysis
+      description: Get analysis results with recording details
+      security:
+      - Bearer: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        description: Bearer token for authentication
+        schema:
+          type: string
+      responses:
+        '200':
+          description: analysis found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  analysis:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      recording_id:
+                        type: integer
+                      recording:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                          lesson_title:
+                            type: string
+                          audio_url:
+                            type: string
+                          transcription:
+                            type: string
+                      fluency_score:
+                        type: number
+                        format: float
+                      accuracy_score:
+                        type: number
+                        format: float
+                      completeness_score:
+                        type: number
+                        format: float
+                      prosody_score:
+                        type: number
+                        format: float
+                      overall_score:
+                        type: number
+                        format: float
+                      feedback:
+                        type: string
+                      created_at:
+                        type: string
+                        format: date-time
+                      updated_at:
+                        type: string
+                        format: date-time
+                required:
+                - success
+                - analysis
+        '404':
+          description: analysis not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/api/v1/avatar/speak":
+    post:
+      summary: avatar speak
+      tags:
+      - Avatar
+      description: Generate avatar speech using HeyGen API
+      parameters: []
+      responses:
+        '200':
+          description: avatar speech generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Avatar speech generated successfully
+                  video_url:
+                    type: string
+                    format: url
+                    example: https://example.com/video.mp4
+                  audio_url:
+                    type: string
+                    format: url
+                    example: https://example.com/audio.mp3
+                required:
+                - success
+                - message
+        '422':
+          description: validation errors
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+        '500':
+          description: HeyGen API error
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  example: Hello, welcome to Soulingo!
+                voice_id:
+                  type: string
+                  example: voice_123
+                avatar_id:
+                  type: string
+                  example: avatar_456
+              required:
+              - text
+              - voice_id
+  "/api/v1/users/register":
+    post:
+      summary: register user
+      tags:
+      - Authentication
+      description: Register a new user account
+      parameters: []
+      responses:
+        '201':
+          description: user created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: User created successfully
+                  user:
+                    "$ref": "#/components/schemas/User"
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiJ9...
+                required:
+                - success
+                - message
+                - user
+                - token
+        '422':
+          description: validation errors
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: John Doe
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  minimum: 6
+                  example: password123
+              required:
+              - name
+              - email
+              - password
+  "/api/v1/users/login":
+    post:
+      summary: login user
+      tags:
+      - Authentication
+      description: Login with email and password
+      parameters: []
+      responses:
+        '200':
+          description: login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Login successful
+                  user:
+                    "$ref": "#/components/schemas/User"
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiJ9...
+                required:
+                - success
+                - message
+                - user
+                - token
+        '401':
+          description: invalid credentials
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  example: password123
+              required:
+              - email
+              - password
+  "/api/v1/lessons":
+    get:
+      summary: list lessons
+      tags:
+      - Lessons
+      description: Get all available lessons
+      security:
+      - Bearer: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        description: Bearer token for authentication
+        schema:
+          type: string
+      responses:
+        '200':
+          description: lessons retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  lessons:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/Lesson"
+                required:
+                - success
+                - lessons
+        '401':
+          description: unauthorized
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+    post:
+      summary: create lesson
+      tags:
+      - Lessons
+      description: Create a new lesson
+      security:
+      - Bearer: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        description: Bearer token for authentication
+        schema:
+          type: string
+      responses:
+        '201':
+          description: lesson created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Lesson created successfully
+                  lesson:
+                    "$ref": "#/components/schemas/Lesson"
+                required:
+                - success
+                - message
+                - lesson
+        '422':
+          description: validation errors
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Basic Greetings
+                content:
+                  type: string
+                  example: Hello, how are you?
+                language:
+                  type: string
+                  example: English
+                difficulty:
+                  type: string
+                  enum:
+                  - beginner
+                  - intermediate
+                  - advanced
+                  example: beginner
+              required:
+              - title
+              - content
+              - language
+              - difficulty
+  "/api/v1/lessons/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: id
+      required: true
+      schema:
+        type: string
+    get:
+      summary: show lesson
+      tags:
+      - Lessons
+      description: Get a specific lesson
+      security:
+      - Bearer: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        description: Bearer token for authentication
+        schema:
+          type: string
+      responses:
+        '200':
+          description: lesson found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  lesson:
+                    "$ref": "#/components/schemas/Lesson"
+                required:
+                - success
+                - lesson
+        '404':
+          description: lesson not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/api/v1/recordings":
+    post:
+      summary: create recording
+      tags:
+      - Recordings
+      description: Create a new audio recording
+      security:
+      - Bearer: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        description: Bearer token for authentication
+        schema:
+          type: string
+      responses:
+        '201':
+          description: recording created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Recording created successfully
+                  recording:
+                    "$ref": "#/components/schemas/Recording"
+                required:
+                - success
+                - message
+                - recording
+        '422':
+          description: validation errors
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: integer
+        required: true
+        description: ID of the lesson this recording belongs to
+  "/api/v1/recordings/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: id
+      required: true
+      schema:
+        type: string
+    get:
+      summary: show recording
+      tags:
+      - Recordings
+      description: Get a specific recording
+      security:
+      - Bearer: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        description: Bearer token for authentication
+        schema:
+          type: string
+      responses:
+        '200':
+          description: recording found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  recording:
+                    "$ref": "#/components/schemas/Recording"
+                required:
+                - success
+                - recording
+        '404':
+          description: recording not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/api/v1/user_lessons":
+    post:
+      summary: enroll in lesson
+      tags:
+      - User Lessons
+      description: Enroll user in a lesson
+      security:
+      - Bearer: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        description: Bearer token for authentication
+        schema:
+          type: string
+      responses:
+        '201':
+          description: successfully enrolled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Successfully enrolled in lesson
+                  user_lesson:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      user_id:
+                        type: integer
+                      lesson_id:
+                        type: integer
+                      lesson_title:
+                        type: string
+                      enrolled_at:
+                        type: string
+                        format: date-time
+                required:
+                - success
+                - message
+                - user_lesson
+        '404':
+          description: lesson not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lesson_id:
+                  type: integer
+                  example: 1
+              required:
+              - lesson_id
+  "/api/v1/user_lessons/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: id
+      required: true
+      schema:
+        type: string
+    get:
+      summary: show user lesson
+      tags:
+      - User Lessons
+      description: Get user lesson details with progress
+      security:
+      - Bearer: []
+      parameters:
+      - name: Authorization
+        in: header
+        required: false
+        description: Bearer token for authentication
+        schema:
+          type: string
+      responses:
+        '200':
+          description: user lesson found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  user_lesson:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      user_id:
+                        type: integer
+                      lesson_id:
+                        type: integer
+                      lesson_title:
+                        type: string
+                      lesson_content:
+                        type: string
+                      lesson_language:
+                        type: string
+                      lesson_difficulty:
+                        type: string
+                      enrolled_at:
+                        type: string
+                        format: date-time
+                      progress:
+                        type: integer
+                        example: 75
+                        description: Progress percentage (0-100)
+                required:
+                - success
+                - user_lesson
+        '404':
+          description: user lesson not found
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Error"
+  "/voices":
+    get:
+      summary: list voices
+      tags:
+      - Voices
+      description: Get all available text-to-speech voices
+      responses:
+        '200':
+          description: voices retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  voices:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/AvatarVoice"
+                required:
+                - success
+                - voices
+servers:
+- url: http://localhost:3000
+  description: Development server
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - name
+      - email
+    Lesson:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        language:
+          type: string
+        difficulty:
+          type: string
+          enum:
+          - beginner
+          - intermediate
+          - advanced
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - title
+      - content
+      - language
+      - difficulty
+    Recording:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        lesson_id:
+          type: integer
+        audio_url:
+          type: string
+          format: url
+        transcription:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - user_id
+      - lesson_id
+    Analysis:
+      type: object
+      properties:
+        id:
+          type: integer
+        recording_id:
+          type: integer
+        fluency_score:
+          type: number
+          format: float
+        accuracy_score:
+          type: number
+          format: float
+        completeness_score:
+          type: number
+          format: float
+        prosody_score:
+          type: number
+          format: float
+        overall_score:
+          type: number
+          format: float
+        feedback:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - recording_id
+      - overall_score
+    AvatarVoice:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        voice_id:
+          type: string
+        language:
+          type: string
+        gender:
+          type: string
+          enum:
+          - male
+          - female
+        accent:
+          type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - name
+      - voice_id
+      - language
+      - gender
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+        details:
+          type: object
+      required:
+      - success
+      - error
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
